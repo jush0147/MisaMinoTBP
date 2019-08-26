@@ -4,3 +4,4 @@
 #define AI_SHOW             0 // ���໥������Χ��AI
 #define AI_TRAINING_DEEP    6 // ѵ��AI˼�����
 #define DEBUG_LEVEL         0
+#define XP_RELEASE          1
