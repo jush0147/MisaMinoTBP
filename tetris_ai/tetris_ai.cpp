@@ -5,11 +5,20 @@
 
 #include "tetris_setting.h"
 #include <assert.h>
+#include <emscripten.h>
 
 #define GENMOV_W_MASK   15
 #define GEN_MOV_NO_PUSH 0
 
 namespace AI {
+
+    // Checks in JS environment, if the stop flag is set
+    #ifdef TBP_ASYNC
+    EM_JS(bool, check_tbp_stop, (), {
+        return Module.tbp_stop;
+    });
+    #endif
+
     enum {
         MOV_SCORE_DROP = 1,
         MOV_SCORE_LR = 10,
@@ -1191,6 +1200,12 @@ namespace AI {
             }
             GenMoving(_pool, movs, cur, x, y, 0);
             for (MovingList::iterator it = movs.begin(); it != movs.end(); ++it) {
+                #ifdef TBP_ASYNC
+                if(TBP_ASYNC_NODES - 1 == search_nodes % TBP_ASYNC_NODES){
+                    emscripten_sleep(0);
+                    if(check_tbp_stop()){ max_search_nodes=0; maxDeep=0;break;}
+                }
+                #endif
                 ++search_nodes;
                 MovsState &ms = que.append();
                 ms.pool_last = _pool;
@@ -1251,6 +1266,12 @@ namespace AI {
                 Gem cur = getGem( cur_num, 0 );
                 GenMoving(_pool, movs, cur, x, y, 1);
                 for (MovingList::iterator it = movs.begin(); it != movs.end(); ++it) {
+                    #ifdef TBP_ASYNC
+                    if(TBP_ASYNC_NODES - 1 == search_nodes % TBP_ASYNC_NODES){
+                        emscripten_sleep(0);
+                        if(check_tbp_stop()){ max_search_nodes=0; maxDeep=0;break;}
+                    }
+                    #endif
                     ++search_nodes;
                     MovsState &ms = que.append();
                     ms.pool_last = _pool;
@@ -1291,15 +1312,9 @@ namespace AI {
             { 15,  30,  20, 999,   2,   2,   2,   2}, // 4
             { 13,  25,  15,  12, 999,   2,   2,   2},
             { 14,  27,  17,  14,  20, 999,   3,   2},
-            //{ 15,  27,  17,  15,  20, 999,   3,   2},
-            //{ 20,  30,  20,  20,  20, 100, 999, 999},
             { 20,  30,  25,  20,  20, 100, 999, 999}, // 7
             { 25,  60,  50,  40,  40,  40, 500, 999},
-            //{ 30,  50,  40,  30,  30,  25,  25,  20},
-            //{ 30, 150, 130, 130, 110, 100,  100, 80},
             { 30,  90,  75,  60,  60,  60,  60, 9999}, // 9
-            //{ 50, 720, 720, 480, 480, 480, 480, 480}, // 9 PC
-            //{ 30,  90,  80,  60,  60,  60,  60,  60},
             { 30, 240, 200, 200, 180, 160, 160, 9999}, // 10
         };
         int sw_map2[16][8] = {
@@ -1312,11 +1327,9 @@ namespace AI {
             { 25,  35,  35,  35,  30,  25,  25, 999},
             { 25,  45,  40,  30,  30,  30,  30,  30}, // 7
             { 25,  90,  80,  60,  50,  50,  50,  50},
-            //{ 30, 220, 200, 200, 160, 150, 150, 120},
             { 30, 150, 130, 100,  80,  80,  50,  50}, // 9
-            //{ 30, 150, 130, 130, 130, 130, 130, 130}, // 9 PC
-            { 30, 300, 200, 180, 120, 100,  80,  80}, // 10
-            //{ 30, 400, 400, 300, 300, 300, 300, 200}, // 10
+            //{ 30, 300, 200, 180, 120, 100,  80,  80}, // 10
+            { 50, 999, 999, 999, 999, 999, 999,  999}, // 10
         };
         int sw_map3[16][8] = {
             {999, 999, 999, 999, 999, 999, 999, 999},
@@ -1328,13 +1341,13 @@ namespace AI {
             { 25,  35,  35,  35,  30,  25,  25, 999},
             { 25,  45,  40,  30,  30,  30,  30,  30}, // 7
             { 25,  90,  80,  60,  50,  40,  30,  30},
-            //{ 30, 220, 200, 200, 160, 150, 150, 120},
             { 30, 120, 100,  80,  70,  60,  50,  40}, // 9
-            //{ 30, 150, 130, 130, 130, 130, 130, 130}, // 9 PC
             { 30, 240, 200, 160, 120,  90,  70,  60}, // 10
         };
         MovQueue<MovsState> * pq_last = &que2, * pq = &que;
         searchDeep = 1;
+        max_search_nodes = 9999999;
+        level = 10;
         for ( int depth = 0; search_nodes < max_search_nodes && depth < maxDeep; searchDeep = ++depth ) { //d < maxDeep
             std::swap(pq_last, pq);
 #if defined(XP_RELEASE)
@@ -1455,6 +1468,12 @@ namespace AI {
                 } else {
                     MovQueue<MovsState> p(movs.size());
                     for (size_t i = 0; i < movs.size() ; ++i) {
+                        #ifdef TBP_ASYNC
+                        if(TBP_ASYNC_NODES - 1 == search_nodes % TBP_ASYNC_NODES){
+                            emscripten_sleep(0);
+                            if(check_tbp_stop()){ max_search_nodes=0; maxDeep=0;break;}
+                        }
+                        #endif
                         ++search_nodes;
                         MovsState &ms = p.append();
                         {
@@ -1533,6 +1552,12 @@ namespace AI {
                         } else {
                             MovQueue<MovsState> p(movs.size());
                             for (size_t i = 0; i < movs.size() ; ++i) {
+                                #ifdef TBP_ASYNC
+                                if(TBP_ASYNC_NODES - 1 == search_nodes % TBP_ASYNC_NODES){
+                                    emscripten_sleep(0);
+                                    if(check_tbp_stop()){ max_search_nodes=0; maxDeep=0;break;}
+                                }
+                                #endif
                                 ++search_nodes;
                                 MovsState &ms = p.append();
                                 {
@@ -1659,6 +1684,12 @@ namespace AI {
                 } else {
                     MovQueue<MovsState> p;
                     for (size_t i = 0; i < movs.size() ; ++i) {
+                        #ifdef TBP_ASYNC
+                        if(TBP_ASYNC_NODES - 1 == search_nodes % TBP_ASYNC_NODES){
+                            emscripten_sleep(0);
+                            if(check_tbp_stop()){ max_search_nodes=0; maxDeep=0;break;}
+                        }
+                        #endif
                         ++search_nodes;
                         MovsState &ms = p.append();
                         {
@@ -1716,7 +1747,9 @@ namespace AI {
                     }
                 }
             }
-            return m.first;
+            MovingSimple result = m.first;
+            result.nodes=search_nodes;
+            return result;
         }
     }
     struct AI_THREAD_PARAM {
@@ -1824,6 +1857,13 @@ namespace AI {
             mov.movs.push_back( AI::Moving::MOV_NULL );
             mov.movs.push_back( AI::Moving::MOV_DROP );
         }
+        mov.nodes = best.nodes;
+        mov.x = best.x;
+        mov.y = best.y;
+        mov.spin = best.spin;
+        mov.score = best.score;
+        mov.score2 = best.score2;
+        mov.wallkick_spin = best.wallkick_spin;
         *p->ret_mov = mov;
 
         *p->searchDeep = searchDeep;

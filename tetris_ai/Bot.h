@@ -13,9 +13,14 @@ public:
     Bot(const Bot& orig);
     virtual ~Bot();
     
-    void startParser();
+    int onMessage(char * msg);
+    
     void setup();
-    void outputAction();
+    void init();
+    void outputMoves();
+    void startCalculating();
+    void debug();
+    
     
     struct tetris_ai {
         int style;
@@ -41,12 +46,7 @@ public:
         }
     };
     
-private:
-    void updateState(const std::string & p1,const std::string & p2,const std::string & p3);
-    void updateQueue(const std::string & s);
-    void updateField(const std::string & s);
-    void changeSettings(const std::string & p1,const std::string & p2);
-    
+private:   
     void processMoves();
     
     char m_hold;
@@ -55,10 +55,23 @@ private:
     int m_queueLen;
     int m_upcomeAtt;
     std::map<char, int> m_gemMap;
+    std::vector<std::string> m_rotateMap;
     
     TetrisGame tetris;
     tetris_rule rule;
     tetris_ai ai;
+
+    // Conversion table from weird Misa block definitions to SRS center used by TBP
+    int srs_point[8][4][2] = {
+        {{0,0},{0,0},{0,0},{0,0}},
+        {{1,1},{2,1},{2,2},{1,2}}, //I
+        {{2,1},{2,1},{2,1},{2,1}}, //T
+        {{2,1},{2,1},{2,1},{2,1}}, //L
+        {{2,1},{2,1},{2,1},{2,1}}, //J
+        {{2,1},{2,1},{2,1},{2,1}}, //Z
+        {{2,1},{2,1},{2,1},{2,1}}, //S
+        {{1,1},{0,0},{0,0},{0,0}}  //O,1
+    };
 };
 
 #endif	/* BOT_H */

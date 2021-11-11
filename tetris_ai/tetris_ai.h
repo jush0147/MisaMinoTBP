@@ -27,9 +27,10 @@ namespace AI {
         std::vector<int> movs;
         int x, y;
         int score, score2;
+        int nodes;
         signed char spin;
         signed char wallkick_spin;
-        Moving () { wallkick_spin = 0; movs.reserve (16); }
+        Moving () { nodes=-1; wallkick_spin = 0; movs.reserve (16); }
         Moving ( const Moving & m ) {
             //movs.reserve (16);
             movs = m.movs;
@@ -39,6 +40,7 @@ namespace AI {
             score = m.score;
             score2 = m.score2;
             wallkick_spin = m.wallkick_spin;
+            nodes = m.nodes;
         }
         Moving ( const Moving & m, int _spin ) {
             movs.reserve (16);
@@ -78,10 +80,11 @@ namespace AI {
         int x, y;
         int lastmove;
         int score, score2;
+        int nodes;
         signed char spin;
         signed char wallkick_spin;
         bool hold;
-        MovingSimple () { x = INVALID_POS; wallkick_spin = 0; lastmove = MovingSimple::MOV_NULL; }
+        MovingSimple () { nodes=-1; x = INVALID_POS; wallkick_spin = 0; lastmove = MovingSimple::MOV_NULL; }
         MovingSimple ( const Moving & m ) {
             x = m.x;
             y = m.y;
@@ -89,6 +92,7 @@ namespace AI {
             score = m.score;
             score2 = m.score2;
             wallkick_spin = m.wallkick_spin;
+            nodes = m.nodes;
             if (m.movs.empty()) hold = false;
             else hold = (m.movs[0] == MovingSimple::MOV_HOLD);
             if (m.movs.empty()) lastmove = MovingSimple::MOV_NULL;
