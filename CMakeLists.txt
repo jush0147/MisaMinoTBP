@@ -36,7 +36,7 @@ target_link_libraries(misamino PRIVATE nlohmann_json::nlohmann_json)
 
 # ENABLE DEBUG MSGs
 #target_compile_definitions(misamino PRIVATE BOT_DEBUG=1)
-target_compile_definitions(misamino PRIVATE BOT_VERSION="v1.0.0")
+target_compile_definitions(misamino PRIVATE BOT_VERSION="v1.0.1")
 target_compile_definitions(misamino PRIVATE BOT_NAME="MisaMino")
 
 set_property(

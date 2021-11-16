@@ -15,7 +15,8 @@ using json = nlohmann::json;
    postMessage() call in javascript                             */
 
 EM_JS(void, call_js_agrs, (const char *title, int lentitle), {
-    postMessage(JSON.parse(UTF8ToString(title, lentitle)));
+    if(Module.tbp_respond)
+        postMessage(JSON.parse(UTF8ToString(title, lentitle)));
 });
 
 bool postMessageJson(json const& j) {
@@ -29,7 +30,7 @@ EMSCRIPTEN_BINDINGS(module) {
 }
 /* ============================================================ */
 
-Bot::Bot():m_hold(' '){
+Bot::Bot(){
     m_gemMap[' '] = AI::GEMTYPE_NULL;
     m_gemMap['I'] = AI::GEMTYPE_I;
     m_gemMap['T'] = AI::GEMTYPE_T;
@@ -79,29 +80,8 @@ int Bot::onMessage(char * msg) {
         };
         postMessageJson(j);
     }else if( command == "start"){
-        tetris.m_pool.m_hold = 0;
-        if(j_msg["hold"].is_string()){
-            string hold = j_msg["hold"].get<std::string>();
-            tetris.m_pool.m_hold = m_gemMap[hold.c_str()[0]];
-        }
-        if(j_msg["queue"].is_array()){
-            int i = 0;
-            for (auto& element : j_msg["queue"]) {
-                string piece = element.get<std::string>();
-                tetris.m_next[i++] = AI::getGem(m_gemMap[piece.c_str()[0]], 0);
-            }
-            tetris.m_next_num=i;
-            tetris.newpiece();
-        }
-        tetris.m_pool.combo = 0;
-        if(j_msg["combo"].is_number()){
-            int combo = j_msg["combo"].get<int>();
-            tetris.m_pool.combo = combo;
-        }
-        if(j_msg["back_to_back"].is_boolean()){
-            bool b2b = j_msg["back_to_back"].get<bool>();
-            //TODO
-        }
+        tetris.reset(0,0);
+        tetris.m_hold = false;
         if(j_msg["board"].is_array()){
             vector<int> rows;
             
@@ -136,6 +116,28 @@ int Bot::onMessage(char * msg) {
             for (auto &row : rows) {
                 tetris.addRow(row);
             }
+        }
+        if(j_msg["queue"].is_array()){
+            int i = 0;
+            for (auto& element : j_msg["queue"]) {
+                string piece = element.get<std::string>();
+                tetris.m_next[i++] = AI::getGem(m_gemMap[piece.c_str()[0]], 0);
+            }
+            tetris.m_next_num=i;
+            tetris.newpiece();
+        }
+        if(j_msg["hold"].is_string()){
+            string hold = j_msg["hold"].get<std::string>();
+            tetris.m_pool.m_hold = m_gemMap[hold.c_str()[0]];
+        }
+        tetris.m_pool.combo = 0;
+        if(j_msg["combo"].is_number()){
+            int combo = j_msg["combo"].get<int>();
+            tetris.m_pool.combo = combo;
+        }
+        if(j_msg["back_to_back"].is_boolean()){
+            bool b2b = j_msg["back_to_back"].get<bool>();
+            //TODO
         }
         #ifdef BOT_DEBUG
             debug();
@@ -372,9 +374,10 @@ void Bot::startCalculating() {
     for (int j = 0; j < tetris.m_next_num; ++j)
         next.push_back(tetris.m_next[j]);
     int deep = AI_TRAINING_DEEP;
-    bool canhold = tetris.hold;
+    // tetris.m_hold - hold already used this round, tetris.hold - hold enabled in ruleset
+    bool canhold = !tetris.m_hold && tetris.hold;
     
-    AI::RunAI(tetris.ai_movs, tetris.ai_movs_flag, tetris.m_ai_param, tetris.m_pool, tetris.m_hold,
+    AI::RunAI(tetris.ai_movs, tetris.ai_movs_flag, tetris.m_ai_param, tetris.m_pool, tetris.m_pool.m_hold,
             tetris.m_cur,
             tetris.m_cur_x, tetris.m_cur_y, next, canhold, m_upcomeAtt,
             deep, tetris.ai_last_deep, ai.level, 0);
@@ -389,7 +392,8 @@ void Bot::debug() {
     for (int j = 0; j < tetris.m_next_num; ++j)
         next.push_back(tetris.m_next[j]);
     int deep = AI_TRAINING_DEEP;
-    bool canhold = tetris.hold;
+    // tetris.m_hold - hold already used this round, tetris.hold - hold enabled in ruleset
+    bool canhold = !tetris.m_hold && tetris.hold;
     out << "[debug] RunAI: movs:" << tetris.ai_movs.movs.size() << ", nodes:" << tetris.ai_movs.nodes << ", flag:" << tetris.ai_movs_flag << ", combo:" <<tetris.m_pool.combo <<endl;
     out << "hold:" << AI::getGem(tetris.m_pool.m_hold, 0).getLetter() << ", cur:"<< tetris.m_cur.getLetter() << " x:"<< tetris.m_cur_x<< " y:"<<tetris.m_cur_y << endl << "Next:";
     for(auto &n : next){
