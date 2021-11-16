@@ -137,7 +137,7 @@ int Bot::onMessage(char * msg) {
         }
         if(j_msg["back_to_back"].is_boolean()){
             bool b2b = j_msg["back_to_back"].get<bool>();
-            //TODO
+            tetris.m_pool.b2b = b2b;
         }
         #ifdef BOT_DEBUG
             debug();
