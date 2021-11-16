@@ -48,7 +48,7 @@ public:
     
 private:   
     void processMoves();
-    
+    int m_restarts;
     char m_queue[8];
     int *m_field;
     int m_queueLen;

@@ -4,13 +4,12 @@ let msgQueue = [];
 let botCalculating = false;
 
 Module.tbp_respond = true;
+Module.tbp_run_id = 0;
+
 Module.onRuntimeInitialized = () => {
     processMessage = async function(msgData) {
 
         botCalculating = true;
-        
-        if(msgData.type == "start")
-            Module.tbp_respond = true;
 
         Module.ccall('tbp_msg', 'number', ['string'], [
             JSON.stringify(msgData)
@@ -28,6 +27,9 @@ Module.onRuntimeInitialized = () => {
     }
 
     onmessage = async function(e) {
+        if( e.data.type == "start")
+            Module.tbp_run_id++;
+
         if(!msgQueue.length && !botCalculating){
             processMessage(e.data);
         }else{
@@ -35,13 +37,6 @@ Module.onRuntimeInitialized = () => {
             if( e.data.type == "suggest" || e.data.type == "stop"){
                 // These messages set the stop flag (in case bot is calculating)
                 Module.tbp_stop = true;
-
-                if( e.data.type == "stop"){
-                    // Stopping, no need to process any other queued command
-                    msgQueue = [];
-                    // Supress the postMessage from the command that is being stopped
-                    Module.tbp_respond = false;
-                }
             }
 
             msgQueue.push(e.data);

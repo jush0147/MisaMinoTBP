@@ -15,8 +15,7 @@ using json = nlohmann::json;
    postMessage() call in javascript                             */
 
 EM_JS(void, call_js_agrs, (const char *title, int lentitle), {
-    if(Module.tbp_respond)
-        postMessage(JSON.parse(UTF8ToString(title, lentitle)));
+    postMessage(JSON.parse(UTF8ToString(title, lentitle)));
 });
 
 bool postMessageJson(json const& j) {
@@ -43,6 +42,7 @@ Bot::Bot(){
     m_rotateMap.push_back("east");
     m_rotateMap.push_back("south");
     m_rotateMap.push_back("west");
+    m_restarts=0;
 }
 
 Bot::Bot(const Bot& orig) {
@@ -80,8 +80,9 @@ int Bot::onMessage(char * msg) {
         };
         postMessageJson(j);
     }else if( command == "start"){
+        m_restarts++;
         tetris.reset(0,0);
-        tetris.m_hold = false;
+        //tetris.m_hold = false;
         if(j_msg["board"].is_array()){
             vector<int> rows;
             
@@ -129,6 +130,7 @@ int Bot::onMessage(char * msg) {
         if(j_msg["hold"].is_string()){
             string hold = j_msg["hold"].get<std::string>();
             tetris.m_pool.m_hold = m_gemMap[hold.c_str()[0]];
+            //tetris.m_hold = true;
         }
         tetris.m_pool.combo = 0;
         if(j_msg["combo"].is_number()){
@@ -310,6 +312,7 @@ void Bot::outputMoves() {
     if(!tetris.alive() || tetris.ai_movs.x == AI::MovingSimple::INVALID_POS){
         json j = {
             {"type", "suggestion"},
+            {"run_id", m_restarts},
             {"moves", json::array()},
             {"debug", "no moves"},
             {"isAlive", (int)tetris.alive()},
@@ -334,6 +337,7 @@ void Bot::outputMoves() {
 
     json j = {
         {"type", "suggestion"},
+        {"run_id", m_restarts},
         {"moves", {
             {
                 {"spin", ""},   // filled after processMoves
@@ -375,9 +379,11 @@ void Bot::startCalculating() {
         next.push_back(tetris.m_next[j]);
     int deep = AI_TRAINING_DEEP;
     // tetris.m_hold - hold already used this round, tetris.hold - hold enabled in ruleset
-    bool canhold = !tetris.m_hold && tetris.hold;
+    //bool canhold = !tetris.m_hold && tetris.hold;
+    bool canhold = tetris.hold;
     
-    AI::RunAI(tetris.ai_movs, tetris.ai_movs_flag, tetris.m_ai_param, tetris.m_pool, tetris.m_pool.m_hold,
+    AI::RunAI(tetris.ai_movs, tetris.ai_movs_flag, tetris.m_ai_param, tetris.m_pool, tetris.m_hold,
+    //AI::RunAI(tetris.ai_movs, tetris.ai_movs_flag, tetris.m_ai_param, tetris.m_pool, tetris.m_pool.m_hold,
             tetris.m_cur,
             tetris.m_cur_x, tetris.m_cur_y, next, canhold, m_upcomeAtt,
             deep, tetris.ai_last_deep, ai.level, 0);
