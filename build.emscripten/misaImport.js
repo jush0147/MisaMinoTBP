@@ -6,6 +6,10 @@ let botCalculating = false;
 Module.tbp_respond = true;
 Module.tbp_run_id = 0;
 
+Module.tbp_postMessage = (msgData) => {
+    postMessage(msgData);
+}
+
 Module.onRuntimeInitialized = () => {
     processMessage = async function(msgData) {
 
@@ -27,8 +31,9 @@ Module.onRuntimeInitialized = () => {
     }
 
     onmessage = async function(e) {
-        if( e.data.type == "start")
+        if( e.data.type == "start"){
             Module.tbp_run_id++;
+        }
 
         if(!msgQueue.length && !botCalculating){
             processMessage(e.data);
