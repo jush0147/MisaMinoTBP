@@ -27,7 +27,6 @@ add_definitions("-std=c++11")
 FetchContent_GetProperties(json)
 if(NOT json_POPULATED)
   # --- 修改後 (請用這段取代上面) ---
-include(FetchContent)
 FetchContent_Declare(
     json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
