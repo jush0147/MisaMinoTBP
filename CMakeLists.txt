@@ -26,8 +26,15 @@ add_definitions("-std=c++11")
 
 FetchContent_GetProperties(json)
 if(NOT json_POPULATED)
-  FetchContent_Populate(json)
-  add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+  # --- 修改後 (請用這段取代上面) ---
+include(FetchContent)
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG "v3.9.1" # 使用符合專案年代 (2021) 的版本以確保相容性
+)
+FetchContent_MakeAvailable(json)
+
 endif()
 
 
