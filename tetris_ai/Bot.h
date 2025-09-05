@@ -26,8 +26,8 @@ public:
         int style;
         int level;
         tetris_ai() {
-            style = 2;
-            level = 4;
+            style = 1;
+            level = 10;
         }
     };
 
