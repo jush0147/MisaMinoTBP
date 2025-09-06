@@ -48,7 +48,7 @@ target_compile_definitions(misamino PRIVATE BOT_NAME="MisaMino")
 set_property(
     TARGET misamino
     APPEND_STRING PROPERTY
-        LINK_FLAGS " -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_DISABLE_EXCEPTION_CATCHING -s EXPORTED_FUNCTIONS='[\"_tbp_msg\",\"_main\"]' -s EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\"]' --bind"
+        LINK_FLAGS " -s ALLOW_MEMORY_GROWTH=1 -s NO_DISABLE_EXCEPTION_CATCHING -s EXPORTED_FUNCTIONS='[\"_tbp_msg\",\"_main\"]' -s EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\"]' --bind"
 )
 
 if(TBP_ASYNC)
@@ -60,5 +60,3 @@ if(TBP_ASYNC)
             LINK_FLAGS " -s ASYNCIFY -s ASYNCIFY_IGNORE_INDIRECT -s ASYNCIFY_ADVISE " #-s ASYNCIFY_IGNORE_INDIRECT -s ASYNCIFY_ADVISE
     )
 endif()
-
-

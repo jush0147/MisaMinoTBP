@@ -1347,7 +1347,7 @@ namespace AI {
         MovQueue<MovsState> * pq_last = &que2, * pq = &que;
         searchDeep = 1;
         max_search_nodes = 9999999;
-        level = 10;
+        // level = 10;
         for ( int depth = 0; search_nodes < max_search_nodes && depth < maxDeep; searchDeep = ++depth ) { //d < maxDeep
             std::swap(pq_last, pq);
 #if defined(XP_RELEASE)
