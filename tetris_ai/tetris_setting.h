@@ -1,4 +1,4 @@
-#define GAMEMODE_4W         0
+#define GAMEMODE_4W         1
 #define USE4W               1
 #define ATTACK_MODE         1 // �����У�0���� 1TOP 2��ƴ
 #define AI_SHOW             0 // ���໥������Χ��AI
